@@ -1,0 +1,120 @@
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/space-grotesk/500.css';
+
+:root {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--workspace);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --accent: #16776b;
+  --accent-hover: #0e6157;
+  --on-accent: #ffffff;
+  --text: #272e2c;
+  --heading: #303c35;
+  --workspace: #f2f4f3;
+  --surface: #ffffff;
+  --surface-soft: #f0f3f0;
+  --surface-hover: #f1f5f3;
+  --surface-active: #e3eee8;
+  --active-text: #24614b;
+  --pattern: #d5dbd7;
+  --border: #dfe4e1;
+  --muted: #65726b;
+  --overlay: #14281f55;
+  --danger: #ac303b;
+  --selection: #c9e9db;
+}
+:root[data-theme='dark'] {
+  --accent: #70c8ae;
+  --accent-hover: #92dbc4;
+  --on-accent: #102b21;
+  --text: #e5e9e7;
+  --heading: #edf2ee;
+  --workspace: #161918;
+  --surface: #222625;
+  --surface-soft: #2b302e;
+  --surface-hover: #323a36;
+  --surface-active: #30493f;
+  --active-text: #a9dfc8;
+  --pattern: #333a36;
+  --border: #414945;
+  --muted: #acb6af;
+  --overlay: #00000088;
+  --danger: #ff9aa8;
+  --selection: #365947;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+button:hover {
+  background: var(--surface-hover);
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+input[type='number'],
+input:not([type]),
+select {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: inherit;
+  padding: 7px 9px;
+}
+input[type='range'] {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 14px 0 9px;
+}
+input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+::selection {
+  background: var(--selection);
+}
