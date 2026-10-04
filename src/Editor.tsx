@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { version as appVersion } from '../package.json'
 import type { ChangeEvent, ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import {
@@ -400,7 +401,6 @@ export default function Editor() {
                 dragSaved.current = true
               }}
             />
-            <span className="canvas-coordinate">0, 0</span>
           </div>
           <div className="playback-bar">
             <div className="playback-left">
@@ -717,6 +717,10 @@ export default function Editor() {
               </section>
             </>
           )}
+          <footer className="inspector-version" aria-label="Application version">
+            <span>Orbit</span>
+            <span>v{appVersion}</span>
+          </footer>
         </aside>
       </main>
       {message && (

@@ -142,13 +142,6 @@
   color: #87908b;
   letter-spacing: 0;
 }
-.canvas-coordinate {
-  position: absolute;
-  bottom: 18px;
-  right: 22px;
-  font-size: 10px;
-  color: #87908b;
-}
 .logo-preview {
   position: absolute;
   inset: 0;
@@ -218,11 +211,25 @@
   background: #8c9790;
 }
 .inspector {
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border-left: 1px solid var(--border);
   padding: 0 22px;
   max-height: calc(100dvh - 76px);
   overflow-y: auto;
+}
+.inspector > * {
+  flex-shrink: 0;
+}
+.inspector-version {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding: 16px 0;
+  font-size: 11px;
+  color: var(--muted);
 }
 .inspector-title {
   height: 59px;

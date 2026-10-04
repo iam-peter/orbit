@@ -2,6 +2,23 @@ import { expect, test } from '@playwright/test'
 import JSZip from 'jszip'
 import { defaultConfig } from '../src/logo'
 
+test('shows the application version in the inspector without a misleading origin label', async ({
+  page,
+}, info) => {
+  await page.goto('/')
+  await expect(page.locator('.canvas-coordinate')).toHaveCount(0)
+  await expect(page.locator('.artboard-wrap')).not.toContainText('0, 0')
+  const version = page.getByLabel('Application version', { exact: true })
+  await version.scrollIntoViewIfNeeded()
+  await expect(version).toBeVisible()
+  await expect(version).toContainText('v0.1.1')
+  await page.screenshot({ path: info.outputPath('inspector-version.png') })
+  await page.getByRole('tab', { name: 'Motion', exact: true }).click()
+  await version.scrollIntoViewIfNeeded()
+  await expect(version).toBeVisible()
+  await expect(version).toContainText('v0.1.1')
+})
+
 test('color picker remembers two rows of shared recent colors across reloads', async ({
   page,
 }, info) => {
