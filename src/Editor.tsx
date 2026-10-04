@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { version as appVersion } from '../package.json'
 import type { ChangeEvent, ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
@@ -174,7 +174,9 @@ export default function Editor() {
   const [guides, setGuides] = useState(true)
   const [snap, setSnap] = useState(false)
   const [tab, setTab] = useState<'design' | 'motion'>('design')
-  const [message, setMessage] = useState('')
+  const [toast, setToast] = useState<{ message: string } | null>(null)
+  const message = toast?.message ?? ''
+  const setMessage = (message: string) => setToast(message ? { message } : null)
   const [modal, setModal] = useState<'export' | 'embed' | null>(null)
   const [snapshot, setSnapshot] = useState({ config, seconds: 0 })
   const [format, setFormat] = useState<'png' | 'jpg' | 'svg'>('png')
@@ -188,6 +190,12 @@ export default function Editor() {
   const upload = useRef<HTMLInputElement>(null)
   const dragSaved = useRef(false)
   const arm = config.arms.find((item) => item.id === selected) ?? config.arms[0]
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = window.setTimeout(() => setToast(null), 5000)
+    return () => window.clearTimeout(timer)
+  }, [toast])
 
   const update = (transform: (current: LogoConfig) => LogoConfig, record = true) => {
     setPlaying(false)

@@ -36,6 +36,8 @@ npm run check
 
 Playback does not mutate the base design. Editing pauses playback and commits visible angles before applying the edit; optional length oscillations are not committed. Reset playback returns to the current base pose. Editor playback pauses its clock while the page is hidden.
 
+Toast notifications dismiss automatically after five seconds. New notifications restart the timer, and the close button dismisses them immediately.
+
 ## Export and Configuration
 
 PNG, JPEG, and SVG exports download directly as image files by default. Enable **Include JSON configuration** in the export dialog to download a ZIP containing the image and a versioned JSON configuration. Export captures the visible pose when the dialog opens, even if playback continues underneath it.

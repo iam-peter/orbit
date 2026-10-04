@@ -27,6 +27,9 @@ export function LogoPreview({
   const svg = useRef<SVGSVGElement>(null)
   const dragging = useRef<string | null>(null)
   const bound = extent(config)
+  const arms = poseAt(config, seconds)
+  const selectedArm = arms.find((arm) => arm.id === selected)
+  const selectedPoint = selectedArm ? endpoint(selectedArm) : undefined
   const move = (event: PointerEvent<SVGSVGElement>) => {
     if (!dragging.current || !svg.current) return
     const matrix = svg.current.getScreenCTM()
@@ -58,7 +61,7 @@ export function LogoPreview({
           <line y1={-bound} y2={bound} />
         </g>
       )}
-      {poseAt(config, seconds).map((arm, index) => {
+      {arms.map((arm, index) => {
         const point = endpoint(arm)
         return (
           <g
@@ -68,17 +71,6 @@ export function LogoPreview({
             strokeLinecap="round"
           >
             <line x1="0" y1="0" x2={point.x} y2={point.y} />
-            {arm.id === selected && guides && (
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r={arm.radius + 8}
-                fill="none"
-                stroke="#879590"
-                strokeWidth="1"
-                strokeDasharray="3 4"
-              />
-            )}
             <circle
               className="arm-handle"
               data-arm={arm.id}
@@ -106,6 +98,20 @@ export function LogoPreview({
           </g>
         )
       })}
+      {guides && selectedArm && selectedPoint && (
+        <circle
+          className="selection-ring"
+          cx={selectedPoint.x}
+          cy={selectedPoint.y}
+          r={selectedArm.radius + config.strokeWidth / 2 + 8}
+          fill="none"
+          stroke="#879590"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+          pointerEvents="none"
+          aria-hidden="true"
+        />
+      )}
     </svg>
   )
 }

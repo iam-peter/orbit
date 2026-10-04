@@ -2,6 +2,74 @@ import { expect, test } from '@playwright/test'
 import JSZip from 'jszip'
 import { defaultConfig } from '../src/logo'
 
+test('toasts expire after five seconds and repeated messages restart the timeout', async ({
+  page,
+}) => {
+  await page.clock.install()
+  await page.goto('/')
+  const toast = page.getByRole('status')
+  await page.getByRole('button', { name: 'Randomize', exact: true }).click()
+  await expect(toast).toContainText('Angles randomized')
+  await page.clock.fastForward(3000)
+  await page.getByRole('button', { name: 'Randomize', exact: true }).click()
+  await page.clock.fastForward(3000)
+  await expect(toast).toBeVisible()
+  await page.clock.fastForward(2000)
+  await expect(toast).toHaveCount(0)
+  await page.getByRole('button', { name: 'Randomize', exact: true }).click()
+  await page.getByRole('button', { name: 'Dismiss message', exact: true }).click()
+  await expect(toast).toHaveCount(0)
+})
+
+test('success and error toasts share the automatic timeout', async ({ page }) => {
+  await page.clock.install()
+  await page.goto('/')
+  const upload = page.locator('input[type="file"]')
+  await upload.setInputFiles({
+    name: 'invalid.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{}'),
+  })
+  await expect(page.getByRole('status')).toContainText('Could not load this file')
+  await page.clock.fastForward(5000)
+  await expect(page.getByRole('status')).toHaveCount(0)
+  await upload.setInputFiles({
+    name: 'logo.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(defaultConfig())),
+  })
+  await expect(page.getByRole('status')).toContainText('Configuration loaded')
+  await page.clock.fastForward(5000)
+  await expect(page.getByRole('status')).toHaveCount(0)
+})
+
+test('selection ring stays above the logo and outside thick circle strokes', async ({
+  page,
+}, info) => {
+  await page.goto('/')
+  const ring = page.locator('.selection-ring')
+  const selected = page.locator('.arm-handle').first()
+  for (const width of [1, 10, 20]) {
+    await page.getByRole('spinbutton', { name: 'Stroke width', exact: true }).fill(String(width))
+    await expect(ring).toHaveAttribute('r', String(30 + width / 2 + 8))
+    await expect(ring).toHaveAttribute('cx', (await selected.getAttribute('cx'))!)
+    await expect(ring).toHaveAttribute('cy', (await selected.getAttribute('cy'))!)
+  }
+  expect(
+    await ring.evaluate((element) => element === element.parentElement!.lastElementChild),
+  ).toBe(true)
+  await expect(ring).toHaveCSS('pointer-events', 'none')
+  await page.locator('.artboard-wrap').scrollIntoViewIfNeeded()
+  await page.screenshot({ path: info.outputPath('thick-stroke-selection.png') })
+  await page.getByRole('button', { name: 'Select arm 2', exact: true }).click()
+  await expect(ring).toHaveAttribute(
+    'cx',
+    (await page.locator('.arm-handle').nth(1).getAttribute('cx'))!,
+  )
+  await page.getByRole('button', { name: 'Toggle guides', exact: true }).click()
+  await expect(ring).toHaveCount(0)
+})
+
 test('shows the application version in the inspector without a misleading origin label', async ({
   page,
 }, info) => {
@@ -11,12 +79,12 @@ test('shows the application version in the inspector without a misleading origin
   const version = page.getByLabel('Application version', { exact: true })
   await version.scrollIntoViewIfNeeded()
   await expect(version).toBeVisible()
-  await expect(version).toContainText('v0.1.1')
+  await expect(version).toContainText('v0.1.2')
   await page.screenshot({ path: info.outputPath('inspector-version.png') })
   await page.getByRole('tab', { name: 'Motion', exact: true }).click()
   await version.scrollIntoViewIfNeeded()
   await expect(version).toBeVisible()
-  await expect(version).toContainText('v0.1.1')
+  await expect(version).toContainText('v0.1.2')
 })
 
 test('color picker remembers two rows of shared recent colors across reloads', async ({
