@@ -93,3 +93,7 @@ Remove `autoplay` for a static representation. The optional `speed` attribute ov
 ## Scope
 
 This first version exports still images and stores animation settings, not video/GIF or animated SVG. Presets, property locks, proportional scaling, and automatic design persistence are possible follow-up features. Browser checks cover Chromium desktop/mobile workflows and Firefox theme/color-picker smoke tests. Full Firefox workflow and Safari certification remain outstanding.
+
+## License
+
+Orbit is released under the [MIT License](LICENSE).

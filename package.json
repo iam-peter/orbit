@@ -3,6 +3,7 @@
   "description": "Browser-based radial logo studio with animated arms, custom colors, high-resolution exports, and controls-free embedding.",
   "private": true,
   "version": "0.1.2",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
