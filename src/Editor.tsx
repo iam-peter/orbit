@@ -19,6 +19,7 @@ import {
   Plus,
   Redo2,
   RotateCcw,
+  Save,
   Shuffle,
   Sun,
   Trash2,
@@ -28,6 +29,8 @@ import {
 import { configSchema, defaultConfig, normalizeAngle, poseAt, randomize } from './logo'
 import type { Arm, LogoConfig } from './logo'
 import { configBlob, download, exportBundle, safeFilename } from './exports'
+import { connectHost } from './host'
+import type { HostLink } from './host'
 import { LogoPreview } from './LogoPreview'
 import { usePlayback } from './usePlayback'
 import { useTheme } from './useTheme'
@@ -190,12 +193,59 @@ export default function Editor() {
   const upload = useRef<HTMLInputElement>(null)
   const dragSaved = useRef(false)
   const arm = config.arms.find((item) => item.id === selected) ?? config.arms[0]
+  // Host mode (see host.ts): the page around the editor loads and saves designs
+  const host = useRef<HostLink | null>(null)
+  const [saveLabel, setSaveLabel] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const savedDesign = useRef('')
+  const reportedDirty = useRef(false)
+  const design = JSON.stringify(config)
 
   useEffect(() => {
     if (!toast) return
     const timer = window.setTimeout(() => setToast(null), 5000)
     return () => window.clearTimeout(timer)
   }, [toast])
+
+  useEffect(() => {
+    const link = connectHost(
+      (loaded, label) => {
+        setPlaying(false)
+        setHistory({ past: [], present: loaded, future: [] })
+        setSelected(loaded.arms[0].id)
+        seek(loaded.capturedAtSeconds ?? 0)
+        savedDesign.current = JSON.stringify(loaded)
+        reportedDirty.current = false
+        setSaveLabel(label)
+      },
+      (error) => setMessage(error),
+    )
+    host.current = link
+    return () => link?.disconnect()
+    // Connect once; seek and setMessage only touch refs and state setters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const reportDirty = (dirty: boolean) => {
+    if (dirty === reportedDirty.current) return
+    reportedDirty.current = dirty
+    host.current?.dirty(dirty)
+  }
+  useEffect(() => {
+    if (saveLabel !== null) reportDirty(design !== savedDesign.current)
+  }, [design, saveLabel])
+
+  const saveToHost = async () => {
+    if (!host.current) return
+    setSaving(true)
+    const result = await host.current.save({ ...config, capturedAtSeconds: seconds })
+    setSaving(false)
+    if (result.ok) {
+      savedDesign.current = design
+      reportDirty(false)
+    }
+    setMessage(result.message ?? (result.ok ? 'Design saved' : 'Could not save the design.'))
+  }
 
   const update = (transform: (current: LogoConfig) => LogoConfig, record = true) => {
     setPlaying(false)
@@ -338,13 +388,24 @@ export default function Editor() {
           >
             <FileJson size={18} />
           </IconButton>
-          <IconButton label="Embed logo" onClick={() => open('embed')}>
-            <Code size={18} />
-          </IconButton>
-          <button className="primary" onClick={() => open('export')}>
+          {saveLabel === null && (
+            <IconButton label="Embed logo" onClick={() => open('embed')}>
+              <Code size={18} />
+            </IconButton>
+          )}
+          <button
+            className={saveLabel === null ? 'primary' : undefined}
+            onClick={() => open('export')}
+          >
             <Download size={16} />
             Export
           </button>
+          {saveLabel !== null && (
+            <button className="primary" disabled={saving} onClick={saveToHost}>
+              <Save size={16} />
+              {saveLabel}
+            </button>
+          )}
         </div>
         <input ref={upload} hidden type="file" accept=".json,application/json" onChange={load} />
       </header>

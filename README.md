@@ -90,6 +90,26 @@ logo.config = configuration
 
 Remove `autoplay` for a static representation. The optional `speed` attribute overrides whole-logo rotation speed in degrees per second (-120 to 120). Independent motion uses each arm's stored speed. The component renders in a shadow root with no editor controls or React dependency. Autoplay pauses offscreen or in a hidden tab, and respects `prefers-reduced-motion`. Invalid attributes dispatch an `orbit-error` event and retain the last valid design.
 
+## Editor in Another Page (Host Mode)
+
+A site can let its users edit their logo inside its own pages, such as a CMS settings screen: it shows the editor in an iframe with `?host=1` and exchanges designs through `postMessage`. Without the parameter, or outside an iframe, the editor behaves as usual.
+
+```html
+<iframe src="https://your-site.example/orbit/?host=1&host-origin=https://cms.example"></iframe>
+```
+
+`host-origin` is the origin of the page around the iframe; it defaults to the editor's own, which suits an editor served by the same site. The editor only accepts messages from its parent window at that origin and only posts there.
+
+| Direction     | Message                                      | Meaning                                                                            |
+| ------------- | -------------------------------------------- | ---------------------------------------------------------------------------------- |
+| editor → host | `{ type: 'orbit:ready' }`                    | The editor listens; send the design now                                            |
+| host → editor | `{ type: 'orbit:load', config, saveLabel? }` | Design to edit, validated like an imported file; `saveLabel` names the save button |
+| editor → host | `{ type: 'orbit:dirty', dirty }`             | The design started or stopped differing from the last loaded or saved one          |
+| editor → host | `{ type: 'orbit:save', config }`             | The user saved; `config` includes `capturedAtSeconds`                              |
+| host → editor | `{ type: 'orbit:saved', ok, message? }`      | Result of the save, shown as a notification                                        |
+
+In host mode the header shows the save button and hides the embed dialog. Import, Save JSON and Export stay available. `src/host.ts` implements the protocol and `tests/host.spec.ts` shows a minimal host page.
+
 ## Scope
 
 This first version exports still images and stores animation settings, not video/GIF or animated SVG. Presets, property locks, proportional scaling, and automatic design persistence are possible follow-up features. Browser checks cover Chromium desktop/mobile workflows and Firefox theme/color-picker smoke tests. Full Firefox workflow and Safari certification remain outstanding.
